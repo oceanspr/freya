@@ -1,0 +1,74 @@
+name: Security Rotation
+
+on:
+  schedule:
+    - cron: "0 0 1 * *"   # Run on the first day of each month
+  pull_request:           # Run dry-run on PRs
+  workflow_dispatch:      # Allow manual trigger
+
+jobs:
+  rotate-security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install openpgp nodemailer node-fetch
+
+      # Dry-run mode for pull requests
+      - name: Run Dry-Run Rotation
+        if: github.event_name == 'pull_request'
+        run: node main.js
+        env:
+          DRY_RUN: true
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NOTIFY_EMAILS: ${{ secrets.NOTIFY_EMAILS }}
+          PGP_PUBLIC_KEYS: ${{ secrets.PGP_PUBLIC_KEYS }}
+
+      - name: Notify Slack (Dry-Run)
+        if: github.event_name == 'pull_request'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"🧪 Dry-run rotation completed. No secrets or passwords were changed."}' \
+          $SLACK_WEBHOOK
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+      # Full rotation mode for scheduled runs
+      - name: Run Full Rotation
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: node main.js
+        env:
+          DRY_RUN: false
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NOTIFY_EMAILS: ${{ secrets.NOTIFY_EMAILS }}
+          PGP_PUBLIC_KEYS: ${{ secrets.PGP_PUBLIC_KEYS }}
+
+      - name: Notify Slack (Full Rotation)
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{"text":"✅ Full rotation completed. Secrets and passwords have been updated."}' \
+          $SLACK_WEBHOOK
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+

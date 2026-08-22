@@ -1,0 +1,30 @@
+newsletter/
+├── src/                     # Frontend CMS/editor layer
+│   ├── components/          # Editor utilities
+│   │   ├── Editor.jsx
+│   │   ├── PostList.jsx
+│   │   ├── PostCard.jsx
+│   │   ├── SearchBar.jsx
+│   │   ├── TagFilter.jsx
+│   ├── pages/               # Page-level views
+│   │   ├── Home.jsx
+│   │   ├── Post.jsx
+│   ├── utils/               # Helpers
+│   │   ├── markdownLoader.js
+│   ├── posts/               # Markdown posts (optional if you want UI + automation in one place)
+│   ├── App.jsx
+│
+├── public/                  # Static assets
+│   └── index.html
+│
+├── config/                  # Settings and configuration
+├── hooks/                   # Security + automation hooks
+├── keys/                    # GPG public keys
+├── logs/                    # Audit logs
+├── main.js                  # Orchestrator entry point
+├── node_modules/            # Dependencies
+├── package-lock.json
+├── package.json             # Add React + Vite dependencies here
+├── scripts/                 # Utility scripts
+├── workflows/               # GitHub Actions workflows
+└── netlify.toml             # Netlify deployment config
