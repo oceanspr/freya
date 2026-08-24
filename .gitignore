@@ -4,18 +4,13 @@ node_modules/
 # Vite build output
 dist/
 
-# Local environment variables
+# Environment variables
 .env
 .env.local
 .env.*.local
 
-# Editor and OS files
-.vscode/
-.idea/
-.DS_Store
-Thumbs.db
-
 # Logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -24,7 +19,13 @@ pnpm-debug.log*
 # Coverage reports
 coverage/
 
-# Optional: lock files if you don’t want them in repo
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Optional: lock files if you prefer not to commit them
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
