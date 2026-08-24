@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
-import Toolbar from "./Toolbar";
+import Toolbar from "./components/Toolbar";
 import "highlight.js/styles/github.css";
 
 export default function Editor() {
