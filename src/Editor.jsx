@@ -1,21 +1,39 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
-import "highlight.js/styles/github.css"; // or another theme
+import Toolbar from "./Toolbar";
+import "highlight.js/styles/github.css";
 
 export default function Editor() {
   const [text, setText] = useState("");
 
+  const handleFormat = (prefix, suffix) => {
+    const textarea = document.querySelector("textarea");
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = text.substring(start, end);
+    const newText =
+      text.substring(0, start) +
+      prefix +
+      selected +
+      suffix +
+      text.substring(end);
+    setText(newText);
+  };
+
   return (
     <div style={{ display: "flex", gap: "2rem" }}>
-      <textarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        rows={20}
-        cols={50}
-        placeholder="Write your newsletter content here (Markdown supported)..."
-        style={{ width: "50%", padding: "1rem", fontFamily: "monospace" }}
-      />
+      <div style={{ width: "50%" }}>
+        <Toolbar onFormat={handleFormat} />
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          rows={20}
+          cols={50}
+          placeholder="Write your newsletter content here..."
+          style={{ width: "100%", padding: "1rem", fontFamily: "monospace" }}
+        />
+      </div>
       <div
         style={{
           width: "50%",
