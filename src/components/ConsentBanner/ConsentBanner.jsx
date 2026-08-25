@@ -22,7 +22,7 @@ export default function ConsentBanner() {
   }
 
   return (
-    <div
+    <div>
       style={{
         background: "#f5f5f5",
         padding: "1rem",
@@ -30,7 +30,7 @@ export default function ConsentBanner() {
         border: "1px solid #ccc",
         borderRadius: "6px",
       }}
-    >
+    &gt;
       <p>
         We use cookies and analytics to improve your experience. Do you consent
         to data collection in line with our privacy policy?
@@ -48,9 +48,19 @@ export default function ConsentBanner() {
       >
         Accept
       </button>
-      <button
-        onClick={() => handleConsent("declined")}
-        style={{
-          padding: "0.5rem 1rem",
-          background: "#c62828",
-          color: "#fff",
+       
+       <button
+          onClick={() => handleConsent("declined")}
+          style={{
+            padding: "0.5rem 1rem",
+            background: "#c62828",
+            color: "#fff",
+            border: "none",
+            borderRadius: "4px",
+          }}
+      >
+         Decline
+      </button>
+        </div>
+  )
+}
