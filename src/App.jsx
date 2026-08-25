@@ -1,33 +1,38 @@
 import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./context/ThemeContext";
-import Editor from "./Editor";
-import ConsentBanner from "./components/ConsentBanner/ConsentBanner";
-import CommentForm from "./components/Comments/CommentForm";
-import CommentList from "./components/Comments/CommentList";
+import Index from "./pages/Index";
+import Editor from "./pages/Editor";
+import Login from "./pages/Login";
 import Header from "./components/Layout/Header";
 import Footer from "./components/Layout/Footer";
 
 export default function App() {
   return (
     <ThemeProvider>
-      <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-        <Header />
-        
-        <h1>Community Newsletter Editor</h1>
-        <Editor />
+      <Router>
+        {/* Flex container to push footer down */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100vh",
+          }}
+        >
+          <Header />
 
-        {/* Privacy & Consent Banner */}
-        <ConsentBanner />
+          {/* Main content grows to fill space */}
+          <main style={{ flex: "1" }}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/editor" element={<Editor />} />
+              <Route path="/login" element={<Login />} />
+            </Routes>
+          </main>
 
-        {/* Comments Section */}
-        <section style={{ marginTop: "2rem" }}>
-          <h2>Community Comments</h2>
-          <CommentForm />
-          <CommentList />
-        </section>
-
-        <Footer />
-      </div>
+          <Footer />
+        </div>
+      </Router>
     </ThemeProvider>
   );
 }
