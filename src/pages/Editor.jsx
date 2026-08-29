@@ -4,25 +4,16 @@ import { ThemeContext } from "../context/ThemeContext";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import Toolbar from "../components/Toolbar";
+import { auth, db } from "../firebase";
+import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
 
 export default function Editor() {
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
 
-  const localToken = localStorage.getItem("authToken");
-  const sessionToken = sessionStorage.getItem("authToken");
-  const isLoggedIn = localToken || sessionToken;
-
-  if (!isLoggedIn) {
-    navigate("/login");
-    return null;
-  }
-
-  // State for content + metadata
   const [text, setText] = useState("");
   const [tag, setTag] = useState("");
   const [category, setCategory] = useState("");
-  const [author, setAuthor] = useState("");
 
   // Load editing post if available
   useEffect(() => {
@@ -31,7 +22,6 @@ export default function Editor() {
       setText(editingData.content);
       setTag(editingData.tag || "");
       setCategory(editingData.category || "");
-      setAuthor(editingData.author || "");
     }
   }, []);
 
@@ -58,30 +48,37 @@ export default function Editor() {
     setText(newText);
   };
 
-  const loginType = localToken ? "Persistent Login" : "Session Login";
-
-  // Unified save logic
-  const handleSave = () => {
+  // Save logic with Firebase
+  const handleSave = async () => {
     if (!text.trim()) return;
 
-    const savedPosts = JSON.parse(localStorage.getItem("newsletterPosts")) || [];
-    const editingData = JSON.parse(localStorage.getItem("editingPost"));
-
-    const newPost = { content: text, tag, category, author };
-
-    if (editingData) {
-      savedPosts[editingData.idx] = newPost;
-      localStorage.removeItem("editingPost");
-    } else {
-      savedPosts.push(newPost);
+    if (!auth.currentUser) {
+      alert("⚠️ You must be logged in to save posts.");
+      return;
     }
 
-    localStorage.setItem("newsletterPosts", JSON.stringify(savedPosts));
-    alert("✅ Post saved!");
+    const newPost = {
+      content: text,
+      tag,
+      category,
+      author: auth.currentUser.displayName || "Anonymous",
+      createdAt: Date.now(),
+    };
+
+    const editingData = JSON.parse(localStorage.getItem("editingPost"));
+
+    if (editingData) {
+      const postRef = doc(db, "newsletterPosts", editingData.id);
+      await updateDoc(postRef, newPost);
+      localStorage.removeItem("editingPost");
+    } else {
+      await addDoc(collection(db, "newsletterPosts"), newPost);
+    }
+
+    alert("✅ Post saved to Firebase!");
     setText("");
     setTag("");
     setCategory("");
-    setAuthor("");
     navigate("/");
   };
 
@@ -107,15 +104,7 @@ export default function Editor() {
           }}
         />
 
-        {/* 👇 Metadata inputs */}
-        <input
-          type="text"
-          placeholder="Author name"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          style={{ marginTop: "0.5rem", padding: "0.5rem", width: "100%" }}
-        />
-
+        {/* 👇 Metadata inputs (tag + category only) */}
         <input
           type="text"
           placeholder="Tag (e.g., Announcement, Tips)"
@@ -132,15 +121,6 @@ export default function Editor() {
           style={{ marginTop: "0.5rem", padding: "0.5rem", width: "100%" }}
         />
 
-        <p
-          style={{
-            marginTop: "0.5rem",
-            fontWeight: "bold",
-            color: loginType === "Persistent Login" ? "#2E7D32" : "#1565C0",
-          }}
-        >
-          🔒 {loginType}
-        </p>
         <button
           onClick={handleSave}
           style={{
@@ -173,7 +153,8 @@ export default function Editor() {
           {text}
         </ReactMarkdown>
         <p style={{ marginTop: "0.5rem", fontStyle: "italic" }}>
-          🏷️ Tag: {tag || "General"} | 📂 Category: {category || "Uncategorized"} | ✍️ Author: {author || "Anonymous"}
+          🏷️ Tag: {tag || "General"} | 📂 Category: {category || "Uncategorized"} | ✍️ Author:{" "}
+          {auth.currentUser?.displayName || "Anonymous"}
         </p>
       </div>
     </div>

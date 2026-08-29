@@ -3,6 +3,8 @@ import { ThemeContext } from "../context/ThemeContext";
 import ReactMarkdown from "react-markdown";
 import rehypeHighlight from "rehype-highlight";
 import { useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 
 export default function Index() {
   const { theme } = useContext(ThemeContext);
@@ -21,9 +23,16 @@ export default function Index() {
   }, [theme]);
 
   useEffect(() => {
-    const savedPosts = JSON.parse(localStorage.getItem("newsletterPosts")) || [];
-    setPosts(savedPosts);
-  }, []);
+  const fetchPosts = async () => {
+    const querySnapshot = await getDocs(collection(db, "newsletterPosts"));
+    const postsArray = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setPosts(postsArray);
+  };
+  fetchPosts();
+}, []);
 
   const handleDelete = (idx) => {
     const updatedPosts = posts.filter((_, i) => i !== idx);
